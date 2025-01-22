@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII 3D Spinner</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #ffffff;
+            --bg-gradient-start: #000000;
+            --bg-gradient-end: #1a1a1a;
+            --accent-color: #ffffff;
+            --button-hover: #ffffff;
+            --overlay-bg: rgba(0, 0, 0, 0.7);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        body {
+            background: radial-gradient(circle at center, var(--bg-gradient-start), var(--bg-gradient-end));
+            color: var(--primary-color);
+            display: flex;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #000, #333);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0, 255, 255, 0.03) 50%, transparent 100%);
+            animation: ambient 15s infinite linear;
+            pointer-events: none;
+        }
+
+  
+
+        .display-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: grab;
+            width: 100%;
+            height: 100%;
+        }
+
+        .display-area:active {
+            cursor: grabbing;
+        }
+
+        #canvas {
+            white-space: pre;
+            font-size: 10px;
+            line-height: 1;
+            font-family: 'Space Mono', monospace;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .controls {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            border-radius: 15px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .instructions {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            padding: 15px 30px;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            font-size: 14px;
+            letter-spacing: 1px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 10;
+            animation: slideUp 0.5s ease-out 0.3s forwards;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .instructions:hover {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border-color: var(--accent-color);
+        }
+
+        button {
+            background: var(--glass-bg);
+            color: var(--primary-color);
+            border: 1px solid var(--glass-border);
+            padding: 12px 24px;
+            cursor: pointer;
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        button:hover {
+            background: var(--button-hover);
+            color: var(--bg-gradient-start);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        .shape-info {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            padding: 15px 25px;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            font-size: 16px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0;
+            z-index: 10;
+            animation: fadeIn 0.5s ease-out forwards;
+            transition: all 0.3s ease;
+        }
+
+        .shape-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .shape-info span {
+            color: var(--accent-color);
+            font-weight: bold;
+            position: relative;
+            display: inline-block;
+        }
+
+        .shape-info span::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--accent-color);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+
+        .shape-info:hover span::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 0.8;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="display-area">
+            <div id="canvas"></div>
+            <div class="shape-info">Current Shape: <span id="shapeName">CUBE</span></div>
+            <div class="instructions">
+                Drag to rotate • Scroll to zoom
+            </div>
+            <div class="controls">
+                <button onclick="toggleShape(); updateShapeName()">Switch Shape</button>
+                <button onclick="resetControls()">Reset View</button>
+            </div>
+        </div>
+    </div>
+    <script src="spinner.js"></script>
+    <script>
+        function updateShapeName() {
+            const name = shape.currentShape.toUpperCase();
+            document.getElementById('shapeName').textContent = name;
+            
+            // Add animation effect
+            const element = document.getElementById('shapeName');
+            element.style.animation = 'none';
+            element.offsetHeight; // Trigger reflow
+            element.style.animation = 'fadeIn 0.3s ease-out';
+        }
+        
+        // Initial shape name
+        updateShapeName();
+    </script>
+</body>
+</html>
