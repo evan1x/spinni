@@ -7,9 +7,9 @@ A minimalist 3D rendering engine that creates beautiful ASCII art animations usi
 - Multiple 3D shapes (cube, sphere, torus, helix, octahedron, and a cute bear)
 - Smooth rotation and zoom controls
 - Real-time rendering using ASCII characters
-- Beautiful glass-morphism UI
 - Z-buffer implementation for proper depth handling
 - Dynamic shading and lighting effects
+- UI
 
 ## Controls
 
