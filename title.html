@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Spinni</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #000000, #1a1a1a);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Mono', monospace;
+            color: #ffffff;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .background-animation {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.15;
+            overflow: hidden;
+            z-index: 0;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        .ascii-row {
+            font-family: 'Space Mono', monospace;
+            white-space: pre;
+            font-size: 1.2rem;
+            line-height: 2;
+            animation: scrollDown 30s linear infinite;
+            opacity: 0;
+            position: absolute;
+            left: 0;
+            width: 100%;
+            transform: translateZ(0);
+            will-change: transform, opacity;
+            letter-spacing: 0.5em;
+            text-align: justify;
+            user-select: none;
+        }
+
+        @keyframes scrollDown {
+            0% {
+                transform: translateY(-100%) translateZ(0);
+                opacity: 0;
+            }
+            5% {
+                opacity: 1;
+            }
+            95% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) translateZ(0);
+                opacity: 0;
+            }
+        }
+
+        .title-container {
+            position: relative;
+            z-index: 1;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            user-select: none;
+        }
+
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+        .enter-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            text-decoration: none;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .enter-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+                            0 0 30px rgba(255, 255, 255, 0.6);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation" id="bgAnimation"></div>
+    <div class="title-container">
+        <h1>spinni</h1>
+        <p>3D JavaScript Engine with ASCII Art</p>
+        <a href="index.html" class="enter-button">Enter</a>
+    </div>
+    <script>
+        const CHARS = '▓▒░█▀■@#$%&+=*/\\|(){}[]<>-_,.';
+        const ROW_COUNT = Math.ceil(window.innerHeight / 32); // Adjusted for new line-height
+        
+        function createAsciiRow() {
+            const row = document.createElement('div');
+            row.className = 'ascii-row';
+            
+            // Calculate characters needed with spacing
+            const charWidth = 14 * 1.5; // Font size * letter-spacing
+            const charCount = Math.ceil(window.innerWidth / charWidth);
+            
+            // Create row with random horizontal offset
+            const offset = Math.floor(Math.random() * 3) * charWidth / 2;
+            row.style.textIndent = offset + 'px';
+            
+            // Generate content with varied density
+            const rowContent = Array.from(
+                { length: charCount }, 
+                () => Math.random() < 0.7 ? CHARS[Math.floor(Math.random() * CHARS.length)] : ' '
+            ).join('');
+            
+            row.textContent = rowContent;
+            
+            // Randomize animation duration slightly for more organic movement
+            const duration = 25 + Math.random() * 10;
+            row.style.animationDuration = duration + 's';
+            row.style.animationDelay = Math.random() * 15 + 's';
+            
+            return row;
+        }
+
+        function initBackground() {
+            const bgElement = document.getElementById('bgAnimation');
+            const fragment = document.createDocumentFragment();
+            
+            // Create initial rows with more overlap
+            for (let i = 0; i < ROW_COUNT * 3; i++) {
+                fragment.appendChild(createAsciiRow());
+            }
+            bgElement.appendChild(fragment);
+
+            // Efficiently manage rows
+            setInterval(() => {
+                const rows = bgElement.children;
+                if (rows.length > ROW_COUNT * 3) {
+                    bgElement.removeChild(rows[0]);
+                }
+                requestAnimationFrame(() => {
+                    bgElement.appendChild(createAsciiRow());
+                });
+            }, 1500);
+        }
+
+        // Handle window resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const bgElement = document.getElementById('bgAnimation');
+                bgElement.innerHTML = '';
+                initBackground();
+            }, 250);
+        });
+
+        initBackground();
+    </script>
+</body>
+</html>
